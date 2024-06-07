@@ -79,7 +79,7 @@ DISTANCE = CreateDistanceMap()
 score = 0
 
 Player1Pos = [3, 5]
-PlayerTwoPos = [16, 5]
+Player2Pos = [16, 5]
 
 
 ##############################################################################
@@ -213,12 +213,88 @@ def dessineCase(x, y, color):
         To(x - 0.5), To(y - 0.5), To(x + 0.5), To(y + 0.5), fill=color, outline=""
     )
 
+def drawPlayer(xx, yy, color):
+    e=20
+
+    # Dessiner le triangle du poulpe
+    points_triangle_haut = [
+    xx - 4*e/5 , yy-e/6 ,   # Point supérieur gauche du triangle
+    xx, yy - e ,           # Point supérieur du triangle
+    xx + 4*e/5 , yy-e/6     # Point supérieur droit du triangle
+    ]
+    canvas.create_polygon(points_triangle_haut, fill=color, outline="")
+
+    # Dessiner le rectangle du poulpe
+    points_rectangle = [
+    xx - 1*e/2, yy - e/6,   # Coin supérieur gauche
+    xx + 1*e/2, yy - e/6,   # Coin supérieur droit
+    xx + 1*e/2, yy + e/3,   # Coin inférieur droit
+    xx - 1*e/2, yy + e/3    # Coin inférieur gauche
+    ]
+    canvas.create_polygon(points_rectangle, fill=color, outline="")
+
+    # Dessiner la jambe gauche
+    x_start = xx - e / 4
+    y_start = yy + e / 3
+    canvas.create_oval(x_start - e / 6, y_start - e / 2, x_start + e / 6, y_start + e / 2, outline="", fill=color)
+
+    # Dessiner la jambe droite
+    x_start_2 = xx + e / 5
+    y_start_2 = yy + e / 3
+    canvas.create_oval(x_start_2 - e / 6, y_start_2 - e / 2, x_start_2 + e / 6, y_start_2 + e / 2, outline="", fill=color)
+
+
+    # Dessiner les yeux
+    x_eye_left = xx - e / 6
+    y_eye = yy - e / 6
+    eye_radius_outer = e / 5
+    eye_radius_inner = e / 12 
+
+    canvas.create_oval(x_eye_left - eye_radius_outer, y_eye - eye_radius_outer,
+                    x_eye_left + eye_radius_outer, y_eye + eye_radius_outer, fill="white", outline="")
+
+    canvas.create_oval(x_eye_left - eye_radius_inner, y_eye - eye_radius_inner,
+                    x_eye_left + eye_radius_inner, y_eye + eye_radius_inner, fill="black", outline="")
+
+    x_eye_right = xx + e / 6
+
+    canvas.create_oval(x_eye_right - eye_radius_outer, y_eye - eye_radius_outer,
+                    x_eye_right + eye_radius_outer, y_eye + eye_radius_outer, fill="white", outline="")
+
+
+    canvas.create_oval(x_eye_right - eye_radius_inner, y_eye - eye_radius_inner,
+                    x_eye_right + eye_radius_inner, y_eye + eye_radius_inner, fill="black", outline="")
+
+    # Dessiner les sourcils
+    y_brow = yy - e / 3
+    brow_width = e / 4 
+    brow_height = e / 12
+
+    x_brow_left = xx - e / 3.5
+    canvas.create_line(x_brow_left, y_brow - brow_height,
+                    x_brow_left + brow_width, y_brow - brow_height, fill="black", width=2.5)
+
+    x_brow_right = xx + e / 10
+    canvas.create_line(x_brow_right, y_brow - brow_height,
+                    x_brow_right + brow_width, y_brow - brow_height, fill="black", width=2.5)
+
+
+    # Dessiner les bras
+    x_arm_left = xx - e * 0.55
+    x_arm_right = xx + e * 0.55
+    y_arm = yy + e / 10
+    arm_length = e / 6 
+    arm_thickness = e / 8 
+
+    canvas.create_oval(x_arm_left - arm_length, y_arm - arm_thickness / 2,
+                    x_arm_left + arm_length / 2, y_arm + arm_thickness / 2,
+                    fill=color, outline="")
+
+    canvas.create_oval(x_arm_right - arm_length / 2, y_arm - arm_thickness / 2,
+                    x_arm_right + arm_length, y_arm + arm_thickness / 2,
+                    fill=color, outline="")
 
 def Affiche(message):
-    global anim_bouche
-
-    def CreateCircle(x, y, r, coul):
-        canvas.create_oval(x - r, y - r, x + r, y + r, fill=coul, width=0)
 
     canvas.delete("all")
 
@@ -254,16 +330,14 @@ def Affiche(message):
             canvas.create_text(xx, yy, text=txt, fill="yellow", font=("Purisa", 8))
 
     # dessine les joueurs
-    xx = To(Player1Pos[0])
-    yy = To(Player1Pos[1])
-    e = 20
+    x1 = To(Player1Pos[0])
+    y1 = To(Player1Pos[1])
+    
+    x2 = To(Player2Pos[0])
+    y2 = To(Player2Pos[1])
 
-    anim_bouche = (anim_bouche + 1) % len(animPacman)
-    ouv_bouche = animPacman[anim_bouche]
-    canvas.create_oval(xx - e, yy - e, xx + e, yy + e, fill="yellow")
-    canvas.create_polygon(
-        xx, yy, xx + e, yy + ouv_bouche, xx + e, yy - ouv_bouche, fill="black"
-    )  # bouche
+    drawPlayer(x1, y1, "cyan")
+    drawPlayer(x2, y2, "red")
 
     # texte
 
