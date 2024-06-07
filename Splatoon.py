@@ -14,7 +14,7 @@ import numpy as np
 
 # 0 vide
 # 1 mur
-# 2 maison des fantomes (ils peuvent circuler mais pas pacman)
+# 2 spawn des joueurs (ne peut être traversé après la sortie)
 
 # transforme une liste de liste Python en TBL numpy équivalent à un tableau 2D en C
 def CreateArray(L):
@@ -37,31 +37,31 @@ TBL = CreateArray([
 
 # attention,  on utilise TBL[x][y] 
 
-HAUTEUR = TBL.shape [1]      
-LARGEUR = TBL.shape [0]  
+HAUTEUR = TBL.shape [1]
+LARGEUR = TBL.shape [0]
 
-# placements des pacgums et des fantomes
+# placements des joueurs et tiles
 
-def PlacementsGUM():  # placements des pacgums
-   GUM = np.zeros(TBL.shape, dtype=np.int32)
+def PlacementsTiles():  # placements des tiles
+   TILES = np.full(TBL.shape, -1, dtype=np.int32)  # Initialise avec des -1
 
    for x in range(LARGEUR):
       for y in range(HAUTEUR):
          if ( TBL[x][y] == 0):
-            GUM[x][y] = 1
-   return GUM
+            TILES[x][y] = 0
+   return TILES
 
-GUM = PlacementsGUM()
+TILES = PlacementsTiles()
 
 # création de la carte des distance
 def CreateDistanceMap():
-   DISTANCE = np.zeros(GUM.shape, dtype=np.int64)
+   DISTANCE = np.zeros(TILES.shape, dtype=np.int64)
 
    for x in range(LARGEUR):
       for y in range(HAUTEUR):
          if ( TBL[x][y] == 1):
             DISTANCE[x][y] = 1000
-         elif (GUM[x][y] == 1):
+         elif (TILES[x][y] == 1):
             DISTANCE[x][y] = 0
          else:
             DISTANCE[x][y] = 100
@@ -70,14 +70,9 @@ def CreateDistanceMap():
 DISTANCE = CreateDistanceMap()
 
 score = 0
-PacManPos = [5, 5]
 
-Ghosts  = []
-Ghosts.append(  [LARGEUR//2,  HAUTEUR // 2 ,   "pink"  ]   )
-Ghosts.append(  [LARGEUR//2,  HAUTEUR // 2 ,   "orange"] )
-Ghosts.append(  [LARGEUR//2,  HAUTEUR // 2 ,   "cyan"  ]   )
-Ghosts.append(  [LARGEUR//2,  HAUTEUR // 2 ,   "red"   ]     )         
-
+Player1Pos = [3, 5]
+PlayerTwoPos = [16, 5]     
 
 
 ##############################################################################
@@ -117,10 +112,9 @@ def SetInfo2(x, y, info):
 
 
 ZOOM = 40   # taille d'une case en pixels
-EPAISS = 8  # epaisseur des murs bleus en pixels
 
-screeenWidth = (LARGEUR+1) * ZOOM  
-screenHeight = (HAUTEUR+2) * ZOOM
+screeenWidth = (LARGEUR+1) * ZOOM
+screenHeight = (HAUTEUR+2) * ZOOM + ZOOM//2
 
 Window = tk.Tk()
 Window.geometry(str(screeenWidth)+"x"+str(screenHeight))   # taille de la fenetre
@@ -186,13 +180,15 @@ canvas.configure(background='black')
 
 
 def To(coord):
-   return coord * ZOOM + ZOOM 
+   return coord * ZOOM + ZOOM
 
 # dessine l'ensemble des éléments du jeu par dessus le décor
 
 anim_bouche = 0
 animPacman = [ 5, 10, 15, 10, 5]
 
+def dessineCase(x,y, color):
+    canvas.create_rectangle(To(x-0.5), To(y-0.5), To(x+0.5), To(y+0.5), fill=color, outline="")
 
 def Affiche(message):
    global anim_bouche
@@ -204,31 +200,20 @@ def Affiche(message):
 
 
    # murs
-
-   for x in range(LARGEUR-1):
-      for y in range(HAUTEUR):
-         if ( TBL[x][y] == 1 and TBL[x+1][y] == 1 ):
-            xx = To(x)
-            xxx = To(x+1)
-            yy = To(y)
-            canvas.create_line(xx, yy, xxx, yy, width = EPAISS, fill="blue")
-
    for x in range(LARGEUR):
-      for y in range(HAUTEUR-1):
-         if ( TBL[x][y] == 1 and TBL[x][y+1] == 1 ):
-            xx = To(x) 
-            yy = To(y)
-            yyy = To(y+1)
-            canvas.create_line(xx, yy, xx, yyy, width = EPAISS, fill="blue")
+        for y in range(HAUTEUR):
+            if TBL[x][y] == 1:
+                dessineCase(x, y, "blue")      
 
-   # pacgum
+   # tiles neutres
    for x in range(LARGEUR):
       for y in range(HAUTEUR):
-         if ( GUM[x][y] == 1):
+         if (TILES[x][y] == 0 or TILES[x][y] == 1):
             xx = To(x) 
             yy = To(y)
             e = 5
-            canvas.create_oval(xx-e, yy-e, xx+e, yy+e, fill="orange")
+            dessineCase(x, y, "grey")
+
 
    #extra info
    for x in range(LARGEUR):
@@ -247,9 +232,9 @@ def Affiche(message):
          canvas.create_text(xx, yy,  text = txt,  fill ="yellow",  font=("Purisa",  8)) 
 
 
-   # dessine pacman
-   xx = To(PacManPos[0]) 
-   yy = To(PacManPos[1])
+   # dessine les joueurs
+   xx = To(Player1Pos[0]) 
+   yy = To(Player1Pos[1])
    e = 20
    anim_bouche = (anim_bouche+1)%len(animPacman)
    ouv_bouche = animPacman[anim_bouche] 
@@ -257,28 +242,6 @@ def Affiche(message):
    canvas.create_oval(xx-e, yy-e,  xx+e, yy+e,  fill = "yellow")
    canvas.create_polygon(xx, yy, xx+e, yy+ouv_bouche, xx+e, yy-ouv_bouche,  fill="black")  # bouche
 
-
-   #dessine les fantomes
-   dec = -3
-   for P in Ghosts:
-      xx = To(P[0]) 
-      yy = To(P[1])
-      e = 16
-
-      coul = P[2]
-      # corps du fantome
-      CreateCircle(dec+xx, dec+yy-e+6, e, coul)
-      canvas.create_rectangle(dec+xx-e, dec+yy-e, dec+xx+e+1, dec+yy+e,  fill=coul,  width  = 0)
-
-      # oeil gauche
-      CreateCircle(dec+xx-7, dec+yy-8, 5, "white")
-      CreateCircle(dec+xx-7, dec+yy-8, 3, "black")
-
-      # oeil droit
-      CreateCircle(dec+xx+7, dec+yy-8, 5, "white")
-      CreateCircle(dec+xx+7, dec+yy-8, 3, "black")
-
-      dec += 3
 
    # texte  
 
