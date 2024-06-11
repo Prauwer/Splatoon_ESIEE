@@ -445,7 +445,6 @@ def updateDistanceMap(side: int):
                         changed = True
     return DISTANCE
 
-
 #  Boucle principale de votre jeu appelée toutes les 500ms
 
 iteration = 0
@@ -455,7 +454,7 @@ def PlayOneTurn():
     global iteration
     global timer
     global END_FLAG
-    
+
     for x in range(LARGEUR):
       for y in range(HAUTEUR):
           SetInfo1(x, y, DISTANCE_RED[x][y])
@@ -479,8 +478,7 @@ def PlayOneTurn():
     if not END_FLAG:
         Affiche(message=f"Temps restant : {timer}s")
     else:
-        # TODO : Calcul du score
-        Affiche(message=f"PARTIE TERMINEE ! Bleu : X cases || Rouge : X cases")
+        Affiche(message=f"PARTIE TERMINEE ! Bleu : {np.sum(TILES == 1)} cases || Rouge : {np.sum(TILES == 2)} cases")
 
 
 ###########################################:
