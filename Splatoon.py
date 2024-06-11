@@ -421,14 +421,14 @@ def PlayOneTurn():
         IAPlayer(Player1Pos, 1)
         IAPlayer(Player2Pos, 2)
 
-    if iteration !=0 and iteration % 3 == 0:
+    if iteration !=0 and iteration % 3 == 0 and not PAUSE_FLAG:
         timer -= 1
 
     if timer < 0:
         END_FLAG = True
 
     if not END_FLAG:
-        Affiche(message=f"Temps restant : {timer} s")
+        Affiche(message=f"Temps restant : {timer}s")
     else:
         Affiche(message=f"PARTIE TERMINEE (todo score)")
 
