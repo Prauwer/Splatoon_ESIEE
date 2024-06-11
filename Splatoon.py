@@ -86,8 +86,9 @@ DISTANCE_BLUE = CreateDistanceMap(2)
 
 timer = 120
 
-Player1Pos = [3, 5]
-Player2Pos = [16, 5]
+spawns = np.where(TBL == 2)
+Player1Pos = [spawns[1][1] -2, spawns[1][0]]
+Player2Pos = [spawns[0][1], spawns[0][0]+2]
 
 TILES[Player1Pos[0], Player1Pos[1]] = 1
 TILES[Player2Pos[0], Player2Pos[1]] = 2
@@ -495,6 +496,8 @@ def PlayOneTurn():
 
     if not PAUSE_FLAG and not END_FLAG:
         iteration += 1
+    
+    if not PAUSE_FLAG and not END_FLAG and iteration > 3:
         IAPlayer(Player1Pos, 1)
         IAPlayer(Player2Pos, 2)
 
