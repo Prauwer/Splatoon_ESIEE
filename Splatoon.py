@@ -76,7 +76,7 @@ def CreateDistanceMap():
 
 DISTANCE = CreateDistanceMap()
 
-score = 0
+timer = 120
 
 Player1Pos = [3, 5]
 Player2Pos = [16, 5]
@@ -137,6 +137,7 @@ Window.title("ESIEE - SPLATOON")
 # gestion de la pause
 
 PAUSE_FLAG = False
+END_FLAG = False
 
 
 def keydown(e):
@@ -397,7 +398,7 @@ def IAPlayer(playerPos, side):
     playerPos[0] += L[choix][0]
     playerPos[1] += L[choix][1]
 
-    # Changer le flag de la case sur laquelle le joueur se tient a)près déplacement
+    # Changer le flag de la case sur laquelle le joueur se tient après déplacement
     TILES[playerPos[0], playerPos[1]] = side
 
 
@@ -412,13 +413,24 @@ iteration = 0
 
 def PlayOneTurn():
     global iteration
+    global timer
+    global END_FLAG
 
-    if not PAUSE_FLAG:
+    if not PAUSE_FLAG and not END_FLAG:
         iteration += 1
         IAPlayer(Player1Pos, 1)
         IAPlayer(Player2Pos, 2)
 
-    Affiche(message=f"score : {score}")
+    if iteration !=0 and iteration % 3 == 0:
+        timer -= 1
+
+    if timer < 0:
+        END_FLAG = True
+
+    if not END_FLAG:
+        Affiche(message=f"Temps restant : {timer} s")
+    else:
+        Affiche(message=f"PARTIE TERMINEE (todo score)")
 
 
 ###########################################:
