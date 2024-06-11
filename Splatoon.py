@@ -89,6 +89,9 @@ timer = 120
 Player1Pos = [3, 5]
 Player2Pos = [16, 5]
 
+TILES[Player1Pos[0], Player1Pos[1]] = 1
+TILES[Player2Pos[0], Player2Pos[1]] = 2
+
 
 ##############################################################################
 #
@@ -385,8 +388,6 @@ AfficherPage(0)
 
 
 def IAPlayer(playerPos, side):
-    # Changer le flag de la case sur laquelle le joueur se tient avant déplacement
-    TILES[playerPos[0], playerPos[1]] = side
     
     if side == 1:
         DISTANCE = DISTANCE_RED
