@@ -80,7 +80,7 @@ def CreateDistanceMap(side: int):
     return DISTANCE
 
 
-DISTANCE_NUTRAL = CreateDistanceMap(0)
+DISTANCE_NEUTRAL = CreateDistanceMap(0)
 DISTANCE_RED = CreateDistanceMap(1)
 DISTANCE_BLUE = CreateDistanceMap(2)
 
@@ -383,28 +383,56 @@ AfficherPage(0)
 #########################################################################
 
 
-def PlayerPossibleMove(x, y):
-    L = []
-    if TBL[x][y - 1] == 0:
-        L.append((0, -1))
-    if TBL[x][y + 1] == 0:
-        L.append((0, 1))
-    if TBL[x + 1][y] == 0:
-        L.append((1, 0))
-    if TBL[x - 1][y] == 0:
-        L.append((-1, 0))
-    return L
-
 
 def IAPlayer(playerPos, side):
     # Changer le flag de la case sur laquelle le joueur se tient avant déplacement
     TILES[playerPos[0], playerPos[1]] = side
+    
+    if side == 1:
+        DISTANCE = DISTANCE_RED
+    else:
+        DISTANCE = DISTANCE_BLUE
 
-    # IA de déplacement du joueur
-    L = PlayerPossibleMove(playerPos[0], playerPos[1])
-    choix = random.randrange(len(L))
-    playerPos[0] += L[choix][0]
-    playerPos[1] += L[choix][1]
+    
+    x, y = playerPos
+    
+    possibleMoves = [
+        [x, y-1], 
+        [x-1, y], 
+        [x, y+1], 
+        [x+1, y], 
+    ]
+    
+    NEIGHBORS_ADVERSE = [
+        [0, DISTANCE[playerPos[0], playerPos[1]-1]],
+        [1, DISTANCE[playerPos[0]-1, playerPos[1]]],
+        [2, DISTANCE[playerPos[0], playerPos[1]+1]],
+        [3, DISTANCE[playerPos[0]+1, playerPos[1]]],
+    ]
+    
+    indice_adverse = np.argmin([line[1] for line in NEIGHBORS_ADVERSE])
+    
+    NEIGHBORS_NEUTRAL = [
+        [0, DISTANCE_NEUTRAL[playerPos[0], playerPos[1]-1]],
+        [1, DISTANCE_NEUTRAL[playerPos[0]-1, playerPos[1]]],
+        [2, DISTANCE_NEUTRAL[playerPos[0], playerPos[1]+1]],
+        [3, DISTANCE_NEUTRAL[playerPos[0]+1, playerPos[1]]],
+    ]
+    
+    indice_neutral = np.argmin([line[1] for line in NEIGHBORS_NEUTRAL])
+    
+    if NEIGHBORS_ADVERSE[indice_adverse][1] != NEIGHBORS_NEUTRAL[indice_neutral][1]:
+        indice_min = np.argmin([NEIGHBORS_ADVERSE[indice_adverse][1], NEIGHBORS_NEUTRAL[indice_neutral][1]])
+    else :
+        indice_min = random.randint(0, 1)
+    if indice_min == 0:
+        indices = [NEIGHBORS_ADVERSE[i][0] for i in range(len(NEIGHBORS_ADVERSE)) if NEIGHBORS_ADVERSE[i][1] == NEIGHBORS_ADVERSE[indice_adverse][1]]
+    else:
+        indices = [NEIGHBORS_NEUTRAL[i][0] for i in range(len(NEIGHBORS_NEUTRAL)) if NEIGHBORS_NEUTRAL[i][1] == NEIGHBORS_NEUTRAL[indice_neutral][1]]
+    choix = random.choice(indices)
+
+    playerPos[0] = possibleMoves[choix][0]
+    playerPos[1] = possibleMoves[choix][1]
 
     # Changer le flag de la case sur laquelle le joueur se tient après déplacement
     TILES[playerPos[0], playerPos[1]] = side
@@ -418,7 +446,7 @@ def updateDistanceMap(side: int):
         0 pour neutre, 1 pour bleu, 2 pour rouge
     """
     if side == 0:
-        DISTANCE = DISTANCE_NUTRAL
+        DISTANCE = DISTANCE_NEUTRAL
     elif side == 1:
         DISTANCE = DISTANCE_BLUE
     else:
@@ -454,20 +482,21 @@ def PlayOneTurn():
     global iteration
     global timer
     global END_FLAG
-
-    for x in range(LARGEUR):
-      for y in range(HAUTEUR):
-          SetInfo1(x, y, DISTANCE_RED[x][y])
+    
+    # for x in range(LARGEUR):
+    #   for y in range(HAUTEUR):
+          # SetInfo1(x, y, DISTANCE_RED[x][y])
+          # SetInfo2(x, y, DISTANCE_NEUTRAL[x][y])
          
+    updateDistanceMap(0)
+    updateDistanceMap(1)
+    updateDistanceMap(2)
 
     if not PAUSE_FLAG and not END_FLAG:
         iteration += 1
         IAPlayer(Player1Pos, 1)
         IAPlayer(Player2Pos, 2)
-        
-    updateDistanceMap(0)
-    updateDistanceMap(1)
-    updateDistanceMap(2)
+
 
     if iteration !=0 and iteration % 3 == 0 and not PAUSE_FLAG:
         timer -= 1
