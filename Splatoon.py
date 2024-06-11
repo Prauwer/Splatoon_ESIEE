@@ -497,12 +497,12 @@ def PlayOneTurn():
     if not PAUSE_FLAG and not END_FLAG:
         iteration += 1
     
-    if not PAUSE_FLAG and not END_FLAG and iteration > 3:
+    if not PAUSE_FLAG and not END_FLAG and iteration >= 3:
         IAPlayer(Player1Pos, 1)
         IAPlayer(Player2Pos, 2)
 
 
-    if iteration !=0 and iteration % 3 == 0 and not PAUSE_FLAG:
+    if iteration >= 3 and iteration % 3 == 0 and not PAUSE_FLAG:
         timer -= 1
 
     if timer < 0:
