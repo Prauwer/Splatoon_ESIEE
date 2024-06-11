@@ -293,6 +293,9 @@ def drawPlayer(xx, yy, color):
     canvas.create_oval(x_arm_right - arm_length / 2, y_arm - arm_thickness / 2,
                     x_arm_right + arm_length, y_arm + arm_thickness / 2,
                     fill=color, outline="")
+    
+def drawPaint(x, y, color):
+    pass
 
 def Affiche(message):
 
@@ -302,16 +305,21 @@ def Affiche(message):
     for x in range(LARGEUR):
         for y in range(HAUTEUR):
             if TBL[x][y] == 1:
-                dessineCase(x, y, "blue")
+                dessineCase(x, y, "purple4")
 
     # tiles neutres
     for x in range(LARGEUR):
         for y in range(HAUTEUR):
-            if TILES[x][y] == 0 or TILES[x][y] == 1:
-                xx = To(x)
-                yy = To(y)
+            xx = To(x)
+            yy = To(y)
+            if TILES[x][y] == 0:
                 e = 5
                 dessineCase(x, y, "grey")
+            if TILES[x][y] == 1:
+                dessineCase(x, y, "royal blue")
+            if TILES[x][y] == 2:
+                dessineCase(x, y, "red3")
+
 
     # extra info
     for x in range(LARGEUR):
@@ -368,23 +376,29 @@ AfficherPage(0)
 
 def PlayerPossibleMove(x, y):
     L = []
-    if TBL[x][y - 1] == 2:
+    if TBL[x][y - 1] == 0:
         L.append((0, -1))
-    if TBL[x][y + 1] == 2:
+    if TBL[x][y + 1] == 0:
         L.append((0, 1))
-    if TBL[x + 1][y] == 2:
+    if TBL[x + 1][y] == 0:
         L.append((1, 0))
-    if TBL[x - 1][y] == 2:
+    if TBL[x - 1][y] == 0:
         L.append((-1, 0))
     return L
 
 
-def IAPlayer():
-    L = PlayerPossibleMove()
+def IAPlayer(playerPos, side):
+    # Changer le flag de la case sur laquelle le joueur se tient avant déplacement
+    TILES[playerPos[0], playerPos[1]] = side
+
+    # IA de déplacement du joueur
+    L = PlayerPossibleMove(playerPos[0], playerPos[1])
     choix = random.randrange(len(L))
-    PacManPos[0] += L[choix][0]
-    PacManPos[1] += L[choix][1]
-    pass
+    playerPos[0] += L[choix][0]
+    playerPos[1] += L[choix][1]
+
+    # Changer le flag de la case sur laquelle le joueur se tient a)près déplacement
+    TILES[playerPos[0], playerPos[1]] = side
 
 
 def updateDistanceMap(x: int, y: int):
@@ -401,7 +415,8 @@ def PlayOneTurn():
 
     if not PAUSE_FLAG:
         iteration += 1
-        pass
+        IAPlayer(Player1Pos, 1)
+        IAPlayer(Player2Pos, 2)
 
     Affiche(message=f"score : {score}")
 
