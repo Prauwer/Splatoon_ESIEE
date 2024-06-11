@@ -479,7 +479,8 @@ def PlayOneTurn():
     if not END_FLAG:
         Affiche(message=f"Temps restant : {timer}s")
     else:
-        Affiche(message=f"PARTIE TERMINEE (todo score)")
+        # TODO : Calcul du score
+        Affiche(message=f"PARTIE TERMINEE ! Bleu : X cases || Rouge : X cases")
 
 
 ###########################################:
