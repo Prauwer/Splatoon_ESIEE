@@ -47,34 +47,42 @@ LARGEUR = TBL.shape[0]
 # placements des joueurs et tiles
 
 
-def PlacementsTiles():  # placements des tiles
-    TILES = np.full(TBL.shape, -1, dtype=np.int32)  # Initialise avec des -1
+def PlacementsTiles():  
+    """Placement des tiles
+    1000 : murs
+    0 : tiles neutres
+    1 : tiles rouge
+    2 : tiles bleu
+    """
+    TILES = np.zeros(TBL.shape, dtype=np.int64)
 
     for x in range(LARGEUR):
         for y in range(HAUTEUR):
-            if TBL[x][y] == 0:
-                TILES[x][y] = 0
+            if TBL[x][y] == 1:
+                TILES[x][y] = 1000
     return TILES
 
 
 TILES = PlacementsTiles()
 
 # création de la carte des distance
-def CreateDistanceMap():
+def CreateDistanceMap(side: int):
     DISTANCE = np.zeros(TILES.shape, dtype=np.int64)
 
     for x in range(LARGEUR):
         for y in range(HAUTEUR):
             if TBL[x][y] == 1:
                 DISTANCE[x][y] = 1000
-            elif TILES[x][y] == 1:
+            elif TBL[x][y] == side:
                 DISTANCE[x][y] = 0
             else:
                 DISTANCE[x][y] = 100
     return DISTANCE
 
 
-DISTANCE = CreateDistanceMap()
+DISTANCE_NUTRAL = CreateDistanceMap(0)
+DISTANCE_RED = CreateDistanceMap(1)
+DISTANCE_BLUE = CreateDistanceMap(2)
 
 timer = 120
 
@@ -402,8 +410,40 @@ def IAPlayer(playerPos, side):
     TILES[playerPos[0], playerPos[1]] = side
 
 
-def updateDistanceMap(x: int, y: int):
-    pass
+def updateDistanceMap(side: int):
+    """mettre à jour la carte de distance
+
+    Args:
+        side (int): quelle carte mettre à jour :
+        0 pour neutre, 1 pour bleu, 2 pour rouge
+    """
+    if side == 0:
+        DISTANCE = DISTANCE_NUTRAL
+    elif side == 1:
+        DISTANCE = DISTANCE_BLUE
+    else:
+        DISTANCE = DISTANCE_RED
+    changed = True
+    while changed:
+        changed = False
+        for x in range(1, TILES.shape[0]-1):
+            for y in range(1, TILES.shape[1]-1):
+                if np.equal(TILES[x][y], side):
+                    if not np.equal(DISTANCE[x][y], 0):
+                        DISTANCE[x][y] = 0
+                        changed = True
+                elif not np.equal(TILES[x][y], 1000):
+                    neightborCases =  [
+                        DISTANCE[x][y-1],
+                        DISTANCE[x-1][y],
+                        DISTANCE[x][y+1],
+                        DISTANCE[x+1][y],
+                    ]
+                    value = min(neightborCases) + 1
+                    if not np.equal(DISTANCE[x][y], value):
+                        DISTANCE[x][y] =  min(neightborCases) + 1
+                        changed = True
+    return DISTANCE
 
 
 #  Boucle principale de votre jeu appelée toutes les 500ms
@@ -415,11 +455,20 @@ def PlayOneTurn():
     global iteration
     global timer
     global END_FLAG
+    
+    for x in range(LARGEUR):
+      for y in range(HAUTEUR):
+          SetInfo1(x, y, DISTANCE_RED[x][y])
+         
 
     if not PAUSE_FLAG and not END_FLAG:
         iteration += 1
         IAPlayer(Player1Pos, 1)
         IAPlayer(Player2Pos, 2)
+        
+    updateDistanceMap(0)
+    updateDistanceMap(1)
+    updateDistanceMap(2)
 
     if iteration !=0 and iteration % 3 == 0 and not PAUSE_FLAG:
         timer -= 1
